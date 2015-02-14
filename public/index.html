@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Sortable List</title>
+
+  <script src="//fb.me/react-with-addons-0.12.1.js"></script>
+  <script src="//fb.me/JSXTransformer-0.12.1.js"></script>
+  <script src="https://rawgit.com/RubaXa/Sortable/react/Sortable.min.js"></script>
+  <script src="https://rawgit.com/RubaXa/Sortable/react/react-sortable-mixin.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+  <script type="text/jsx" language="JavaScript 1.7">
+    var App = React.createClass({
+
+      getData: function(callback) {
+        var xmlhttp = new XMLHttpRequest();
+        var url = '/';
+
+        xmlhttp.onreadystatechange = function() {
+          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var data = JSON.parse(xmlhttp.responseText);
+            callback(data);
+          }
+        }.bind(this);
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+      },
+
+      getInitialState: function() {
+
+        this.getData(function(data){
+          var titles = data.programs.map(function (item) {
+            return item['title']
+          });
+          this.setState({data: data, titles: titles, selectedItem: {}});
+        }.bind(this));
+
+        return {
+          data: {},
+          titles: [],
+          selectedItem: {}
+        }
+      },
+
+      render: function () {
+        return (
+            <div className="panel panel-default">
+              <div className="panel-heading">
+                <h3 className="panel-title">Sortable List</h3>
+              </div>
+              <div className="panel-body">
+                <div className="row">
+                  <div className="col-md-6">
+                    <SortableList
+                        items={this.state.titles}
+                        selectedItem={this.state.selectedItem}
+                        selectItem={this.handleSelectItem}
+                        updateItems={this.handleUpdateItems}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <pre>
+                      {JSON.stringify(this.state.selectedItem, undefined, 2)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+        )
+      },
+
+      handleSelectItem: function (title) {
+        var item = this.state.data.programs.filter(function (item) {
+          return item.title === title
+        })[0];
+        this.setState({selectedItem: item});
+      },
+
+      handleUpdateItems: function (items) {
+        this.setState({titles: items});
+      }
+    });
+
+    var SortableMixin = window['SortableMixin'];
+    var SortableList = React.createClass({
+      mixins: [SortableMixin],
+
+      getInitialState: function () {
+        return this.props;
+      },
+
+      componentWillReceiveProps: function (nextProps) {
+        this.setState(nextProps);
+      },
+
+      handleStart: function (evt) {
+        console.log('handleStart:', evt);
+      },
+
+      handleEnd: function (evt) {
+        console.log('handleEnd:', evt);
+      },
+
+      handleUpdate: function (evt, sortable) {
+        this.props.updateItems(sortable.toArray());
+        console.log('handleUpdate:', sortable.toArray());
+      },
+
+      handleSort: function (evt) {
+        console.log('moved: ' + evt.oldIndex + ' -> ' + evt.newIndex);
+      },
+
+      render: function () {
+        return (
+          <ul className="list-group">
+            {this.renderItems()}
+          </ul>
+        )
+      },
+
+      renderItems: function () {
+        var items = this.state.items;
+        return items.map(function (item) {
+          var selectedItem = this.state.selectedItem;
+          var classNames = 'list-group-item ';
+          if (selectedItem.title === item) {
+            classNames += 'active';
+          }
+          return <li key={item} data-id={item} className={classNames} onClick={this.handleSelectItem.bind(this, item)}>{item}</li>
+        }.bind(this))
+      },
+
+      handleSelectItem: function (title) {
+        this.props.selectItem(title);
+      }
+
+    });
+
+    React.render(<App />, document.body);
+  </script>
+
+
+</head>
+<body>
+
+</body>
+</html>
