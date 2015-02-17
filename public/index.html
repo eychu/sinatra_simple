@@ -121,7 +121,7 @@
 
       renderItems: function() {
         var items = this.state.items;
-        return items.map(function(item) {
+        return items.map(function(item, i) {
           var selectedItem = this.state.selectedItem;
           var classNames = 'list-group-item ';
           if (selectedItem.title === item) {
@@ -135,7 +135,7 @@
                   onClick={this.handleSelectItem.bind(this, item)}
                   onTouchStart={this.handleSelectItem.bind(this, item)}
               >
-                {item}
+                <kbd>{i + 1}</kbd> {item}
               </li>
           )
         }.bind(this))
